@@ -1,0 +1,5 @@
+ta
+pandas
+yfinance
+fpdf2
+prettytable
