@@ -1,5 +1,8 @@
 class Strategy():
-    def __init__(self, df):
+    def __init__(self, name:str):
+        self.name = name
+
+    def set_df(self, df):
         self.df = df
 
     def add_indicator(self):

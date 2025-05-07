@@ -1,15 +1,15 @@
-from app.strategy.strategy import Strategy
+from strategy.strategy import Strategy
 import math
 import pandas as pd
-
+from data import PriceData
 
 class Backtest:
-    def __init__(self, initial_account, risk_per_trade, stg:Strategy):
+    def __init__(self, initial_account, risk_per_trade):
         self.initial_account = initial_account
         self.risk_per_trade_pct = risk_per_trade 
-        self.stg = stg
+        
     
-    def backtest(self):
+    def backtest_single_stock(self, stg:Strategy):
         trades = []
         in_position = False
         entry_price = 0
@@ -19,7 +19,7 @@ class Backtest:
         account_history = []
         balance_by_date = {}
         current_balance = self.initial_account
-        df = self.stg.df
+        df = stg.df
         df['entry_trade'] = 0
         df['exit_trade'] = 0
         for date, row in df.iterrows():
@@ -87,15 +87,15 @@ class Backtest:
             balance_by_date[date] = current_balance
 
         # Buat DataFrame trade
-        self.trades_df = pd.DataFrame(trades)
+        trades_df = pd.DataFrame(trades)
 
         # Perhitungan statistik umum
-        total_profit = self.trades_df['profit'].sum() if not self.trades_df.empty else 0
-        number_of_trades = len(self.trades_df)
-        profitable_trades = self.trades_df[self.trades_df['profit'] > 0] if not self.trades_df.empty else 0
+        total_profit = trades_df['profit'].sum() if not trades_df.empty else 0
+        number_of_trades = len(trades_df)
+        profitable_trades = trades_df[trades_df['profit'] > 0] if not trades_df.empty else 0
         precision = len(profitable_trades) / number_of_trades if number_of_trades > 0 else 0
-        largest_profit = self.trades_df['profit'].max() if not self.trades_df.empty else 0
-        largest_loss = self.trades_df['profit'].min() if not self.trades_df.empty else 0
+        largest_profit = trades_df['profit'].max() if not trades_df.empty else 0
+        largest_loss = trades_df['profit'].min() if not trades_df.empty else 0
         drawdowns = [account_history[i] - max(account_history[:i+1]) for i in range(len(account_history))]
         max_drawdown = min(drawdowns) if drawdowns else 0
 
@@ -120,18 +120,48 @@ class Backtest:
                     'profit_percent': profit_percent
                 }
 
-        self.yearly_df = pd.DataFrame.from_dict(yearly_profit, orient='index')
-
+        yearly_df = pd.DataFrame.from_dict(yearly_profit, orient='index')
+        yearly_df.index.name = 'Year'
+        yearly_df.reset_index(inplace=True)
         # Format output
-        self.statistics_results = {
+        statistics_results = {
             'total_profit': total_profit,
             'number_of_trades': number_of_trades,
             'precision': precision,
             'largest_profit': largest_profit,
             'largest_loss': largest_loss,
-            'yearly_cagr': self.yearly_df['profit_percent'].mean(),
-            'yearly_cagr_value': self.yearly_df['profit_money'].mean(),
+            'yearly_cagr': yearly_df['profit_percent'].mean(),
+            'yearly_cagr_value': yearly_df['profit_money'].mean(),
             'max_drawdown': max_drawdown
         }
-        
+        return statistics_results, yearly_df, trades_df
+    
+    def backtest_watchlist(self, stg:Strategy):
+        price_data = PriceData()
+        wl = price_data.read_watchlist()
+
+        stat_dict = {}
+        results_list = []
+        for ticker in wl:
+            df = price_data.read_data(ticker)
+            stg.set_df(df)
+            stg.add_indicator()
+            stg.add_signal()
+
+            stat, yearly, trades = self.backtest_single_stock(stg)
+            stat_dict[ticker] = stat
+            stat_dict[ticker]['yearly_profit'] = yearly
+            stat_dict[ticker]['trades'] = trades
+            result = {
+                'ticker': ticker,
+                'stats': stat,
+                'trades': trades,
+                'yearly_profit': yearly
+            }
+            results_list.append(result)
+        stat_df = pd.DataFrame.from_dict(stat_dict, orient='index')
+        stat_df.index.name = 'Ticker'
+        stat_df.reset_index(inplace=True)
+
+        return stat_df
     
