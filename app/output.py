@@ -1,7 +1,7 @@
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 import pandas as pd
-
+from prettytable import PrettyTable
 
 def format_rupiah(x):
     return f"Rp {x:,.0f}".replace(",", ".")
@@ -169,13 +169,14 @@ def save_multiple_backtests_to_pdf(backtest_results:pd.DataFrame, filename="full
             trades_df['entry_date'] = trades_df['entry_date'].dt.strftime('%Y-%m-%d')
             trades_df['exit_date'] = trades_df['exit_date'].dt.strftime('%Y-%m-%d')
             trades_df['entry_price'] = trades_df['entry_price'].apply(format_rupiah)
+            trades_df['entry_cost'] = trades_df['entry_cost'].apply(format_rupiah)
             trades_df['initial_sl'] = trades_df['initial_sl'].apply(format_rupiah)
             trades_df['exit_price'] = trades_df['exit_price'].apply(format_rupiah)
             trades_df['profit'] = trades_df['profit'].apply(format_rupiah)
             trades_df['account_balance'] = trades_df['account_balance'].apply(format_rupiah)
-            display_cols = ['entry_date', 'exit_date', 'entry_price', 'exit_price', 'initial_sl','lot', 'profit', 'account_balance']
+            display_cols = ['entry_date', 'exit_date', 'entry_price', 'exit_price', 'initial_sl','lot', 'entry_cost', 'profit', 'account_balance']
             trades_to_display = trades_df[display_cols].copy()
-            col_widths = [35, 35, 20, 20, 20, 15, 35, 35]
+            col_widths = [25, 25, 20, 20, 20, 20, 35, 35, 35]
             pdf.create_table(trades_to_display, col_widths=col_widths)
         else:
             pdf.chapter_body("No trades available.")
@@ -183,3 +184,13 @@ def save_multiple_backtests_to_pdf(backtest_results:pd.DataFrame, filename="full
     # Save file
     pdf.output(f'./data/output/{filename}')
     print(f"PDF saved to {filename}")
+
+def print_table(df:pd.DataFrame):
+    table = PrettyTable()
+    df.reset_index(drop=True, inplace=True)
+    values = df.to_dict(orient='records')
+    table.field_names = values[0].keys()
+    
+    for row in values:
+        table.add_row(row.values())
+    print(table)

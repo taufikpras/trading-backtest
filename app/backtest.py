@@ -2,6 +2,7 @@ from strategy.strategy import Strategy
 import math
 import pandas as pd
 from data import PriceData
+from output import format_percent, format_rupiah
 
 class Backtest:
     def __init__(self, initial_account, risk_per_trade):
@@ -53,6 +54,7 @@ class Backtest:
                     'entry_price': round(entry_price,2),
                     'exit_price': round(exit_price,2),
                     'lot': lot_partial,
+                    'entry_cost': lot * 100 * entry_price,
                     'profit': round(profit,2),
                     'initial_sl': round(initial_sl,2),
                     'account_balance': round(current_balance,2)
@@ -70,6 +72,7 @@ class Backtest:
                     'entry_price': round(entry_price,2),
                     'exit_price': round(exit_price,2),
                     'lot': lot,
+                    'entry_cost': lot * 100 * entry_price,
                     'profit': round(profit,2),
                     'initial_sl': round(initial_sl,2),
                     'account_balance': round(current_balance,2)
@@ -136,12 +139,13 @@ class Backtest:
         }
         return statistics_results, yearly_df, trades_df
     
-    def backtest_watchlist(self, stg:Strategy):
-        price_data = PriceData()
+    def backtest_watchlist(self, stg:Strategy, start_date= '2018-01-01', period="1d"):
+        price_data = PriceData(start_date = start_date, period = period)
         wl = price_data.read_watchlist()
 
         stat_dict = {}
         results_list = []
+        signal_dict = {}
         for ticker in wl:
             df = price_data.read_data(ticker)
             stg.set_df(df)
@@ -159,9 +163,39 @@ class Backtest:
                 'yearly_profit': yearly
             }
             results_list.append(result)
+
+            if(stg.find_signal()):
+                initial_risk = int(df.loc[df.index[-1], 'Close'])  - int(df.loc[df.index[-1], 'trailing'])
+                risk_per_trade = self.initial_account * self.risk_per_trade_pct
+                lot = risk_per_trade / (initial_risk * 100)
+                result = {
+                    'ticker': ticker,
+                    'entry': int(df.loc[df.index[-1], 'Close']),
+                    'lot': math.floor(lot),
+                    'risk_pct': f"{round(initial_risk / int(df.loc[df.index[-1], 'Close']) * 100,2)}%",
+                    'initial_risk': initial_risk,
+                    'trailing': int(df.loc[df.index[-1], 'trailing']),
+                    'total_profit': stat['total_profit'],
+                    'number_of_trades': stat['number_of_trades'],
+                    'precision': stat['precision'],
+                    'largest_profit': stat['largest_profit'],
+                    'largest_loss': stat['largest_loss'],
+                    'max_drawdown': stat['max_drawdown']
+                }
+                signal_dict[ticker] = result
         stat_df = pd.DataFrame.from_dict(stat_dict, orient='index')
         stat_df.index.name = 'Ticker'
         stat_df.reset_index(inplace=True)
 
-        return stat_df
+        signal_df = pd.DataFrame.from_dict(signal_dict, orient='index')
+        signal_df.sort_values('total_profit', ascending=False)
+        signal_df['total_profit'] = signal_df['total_profit'].apply(format_rupiah)
+        signal_df['largest_profit'] = signal_df['largest_profit'].apply(format_rupiah)
+        signal_df['largest_loss'] = signal_df['largest_loss'].apply(format_rupiah)
+        signal_df['max_drawdown'] = signal_df['max_drawdown'].apply(format_rupiah)
+        signal_df['entry'] = signal_df['entry'].apply(format_rupiah)
+        signal_df['initial_risk'] = signal_df['initial_risk'].apply(format_rupiah)
+        signal_df['trailing'] = signal_df['trailing'].apply(format_rupiah)
+        signal_df['precision'] = signal_df['precision'].apply(format_percent)
+        return stat_df, signal_df
     
