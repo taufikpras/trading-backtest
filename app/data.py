@@ -38,8 +38,8 @@ class PriceData:
             if data.tail(1).index[0] <= yesterday:
                 print("not update")
                 data = self.download_data(ticker)
-        filtered_df = data.loc[self.start_date:self.end_date]
-        return filtered_df
+        
+        return data
     
     def read_watchlist(self):
         # read from file

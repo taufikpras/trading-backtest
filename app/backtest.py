@@ -3,7 +3,7 @@ import math
 import pandas as pd
 from data import PriceData
 from output import format_percent, format_rupiah
-
+from datetime import datetime
 class Backtest:
     def __init__(self, initial_account, risk_per_trade):
         self.initial_account = initial_account
@@ -139,7 +139,7 @@ class Backtest:
         }
         return statistics_results, yearly_df, trades_df
     
-    def backtest_watchlist(self, stg:Strategy, start_date= '2018-01-01', interval="1d"):
+    def backtest_watchlist(self, stg:Strategy, start_date= '2018-01-01', end_date= datetime.today().strftime('%Y-%m-%d'), interval="1d"):
         price_data = PriceData(start_date = start_date, interval = interval)
         wl = price_data.read_watchlist()
 
@@ -151,6 +151,7 @@ class Backtest:
             stg.set_df(df)
             stg.add_indicator()
             stg.add_signal()
+            df = df.loc[start_date:end_date]
 
             stat, yearly, trades = self.backtest_single_stock(stg)
             stat_dict[ticker] = stat
