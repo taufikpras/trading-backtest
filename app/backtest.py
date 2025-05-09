@@ -139,8 +139,8 @@ class Backtest:
         }
         return statistics_results, yearly_df, trades_df
     
-    def backtest_watchlist(self, stg:Strategy, start_date= '2018-01-01', period="1d"):
-        price_data = PriceData(start_date = start_date, period = period)
+    def backtest_watchlist(self, stg:Strategy, start_date= '2018-01-01', interval="1d"):
+        price_data = PriceData(start_date = start_date, interval = interval)
         wl = price_data.read_watchlist()
 
         stat_dict = {}

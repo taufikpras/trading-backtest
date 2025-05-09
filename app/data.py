@@ -4,18 +4,18 @@ import pandas as pd
 import os
 
 class PriceData:
-    def __init__(self, start_date:str='2018-01-01', end_date:str=datetime.today().strftime('%Y-%m-%d'), period="1d"):
+    def __init__(self, start_date:str='2018-01-01', end_date:str=datetime.today().strftime('%Y-%m-%d'), interval="1d"):
         self.start_date = start_date
         self.end_date = end_date
-        self.period = period
+        self.interval = interval
         
     
     def get_price_file(self, ticker):
-        return f'./data/price/{self.period}/{ticker}.csv'
+        return f'./data/price/{self.interval}/{ticker}.csv'
     
     def download_data(self,ticker):
         print(f'Download data {ticker}')
-        data = yf.download(f'{ticker}.JK', start=self.start_date, end=self.end_date, progress=False, period=self.period)
+        data = yf.download(f'{ticker}.JK', start=self.start_date, end=self.end_date, progress=False, interval=self.interval)
 
         data2 = pd.DataFrame()
         for c in data.columns:
@@ -38,7 +38,8 @@ class PriceData:
             if data.tail(1).index[0] <= yesterday:
                 print("not update")
                 data = self.download_data(ticker)
-        return data
+        filtered_df = data.loc[self.start_date:self.end_date]
+        return filtered_df
     
     def read_watchlist(self):
         # read from file

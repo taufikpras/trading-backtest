@@ -20,6 +20,6 @@ output.save_multiple_backtests_to_pdf(return_df,filename=f'{stg.name}.pdf', stg_
 output.print_table(signal)
 
 stg = Strategy_ema20("EMA20 1wk")
-return_df, signal = backtest.backtest_watchlist(stg,"2016-01-01","1wk")
+return_df, signal = backtest.backtest_watchlist(stg,"2019-01-01","1wk")
 output.save_multiple_backtests_to_pdf(return_df,filename=f'{stg.name}.pdf', stg_name=stg.name)
 output.print_table(signal)
