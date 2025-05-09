@@ -151,7 +151,7 @@ class Backtest:
             stg.set_df(df)
             stg.add_indicator()
             stg.add_signal()
-            df = df.loc[start_date:end_date]
+            stg.df = stg.df.loc[start_date:end_date]
 
             stat, yearly, trades = self.backtest_single_stock(stg)
             stat_dict[ticker] = stat
