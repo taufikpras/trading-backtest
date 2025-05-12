@@ -148,6 +148,9 @@ class Backtest:
         signal_dict = {}
         for ticker in wl:
             df = price_data.read_data(ticker)
+            if df.empty:
+                print(f"Data for {ticker} is empty, skipping...")
+                continue
             stg.set_df(df)
             stg.add_indicator()
             stg.add_signal()

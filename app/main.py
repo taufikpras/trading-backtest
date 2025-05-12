@@ -1,7 +1,7 @@
-from backtest import Backtest
-from strategy.strategy_3ema import Strategy_3ema
-from strategy.strategy_ema30 import Strategy_ema30
-from strategy.strategy_ema20 import Strategy_ema20
+from app.backtest import Backtest
+from app.strategy.strategy_3ema import Strategy_3ema
+from app.strategy.strategy_ema30 import Strategy_ema30
+from app.strategy.strategy_ema20 import Strategy_ema20
 from pprint import pprint
 import output
 import warnings
