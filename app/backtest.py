@@ -1,8 +1,8 @@
-from strategy.strategy import Strategy
+from strategies.strategy import Strategy
 import math
 import pandas as pd
-from data import PriceData
-from output import format_percent, format_rupiah
+from app.data import PriceData
+from .output import format_percent, format_rupiah
 from datetime import datetime
 class Backtest:
     def __init__(self, initial_account, risk_per_trade):

@@ -1,4 +1,4 @@
-from strategy.strategy import Strategy
+from app.strategies.strategy import Strategy
 import ta
 
 class Strategy_ema20(Strategy):

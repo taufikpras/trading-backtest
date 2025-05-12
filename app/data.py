@@ -18,13 +18,16 @@ class PriceData:
     def get_update_info_file(self):
         return f"./data/update-info-{self.interval}.pkl"
     
-    def check_expired(self, ticker:str):
+    def check_expired(self, ticker:str, head_date:datetime):
         if os.path.exists(self.get_update_info_file()):
             # print("file exist")
             today = datetime.combine(datetime.today(), datetime.min.time()) + timedelta(minutes=1)
             if ticker in self.update_info.keys():
                 if self.update_info[ticker] > today:
-                    return False
+                    if head_date > datetime.strptime(self.start_date, '%Y-%m-%d'):
+                        return True
+                    else:
+                        return False
             
             return True
         else :
@@ -70,7 +73,7 @@ class PriceData:
                 data = data.set_index('Date')
                 # print(f'{data.tail(1).index[0]} - {yesterday}')     
                 
-                if self.check_expired(ticker):
+                if self.check_expired(ticker, data.head(1).index[0]):
                     print(f"{ticker} data needs update")
                     data = self.download_data(ticker)
                 print(f"{ticker} data up to date")
