@@ -122,7 +122,22 @@ class Backtest:
                     'profit_money': profit_money,
                     'profit_percent': profit_percent
                 }
+            # else:
+            #     yearly_profit[year] = {
+            #         'start_balance': 0,
+            #         'end_balance': 0,
+            #         'profit_money': 0,
+            #         'profit_percent': 0
+            #     }
 
+        if len(yearly_profit) == 0:
+            yearly_profit[0] = {
+                'start_balance': 0,
+                'end_balance': 0,
+                'profit_money': 0,
+                'profit_percent': 0
+            }
+        
         yearly_df = pd.DataFrame.from_dict(yearly_profit, orient='index')
         yearly_df.index.name = 'Year'
         yearly_df.reset_index(inplace=True)
@@ -192,14 +207,27 @@ class Backtest:
         stat_df.reset_index(inplace=True)
 
         signal_df = pd.DataFrame.from_dict(signal_dict, orient='index')
-        signal_df.sort_values('total_profit', ascending=False)
-        signal_df['total_profit'] = signal_df['total_profit'].apply(format_rupiah)
-        signal_df['largest_profit'] = signal_df['largest_profit'].apply(format_rupiah)
-        signal_df['largest_loss'] = signal_df['largest_loss'].apply(format_rupiah)
-        signal_df['max_drawdown'] = signal_df['max_drawdown'].apply(format_rupiah)
-        signal_df['entry'] = signal_df['entry'].apply(format_rupiah)
-        signal_df['initial_risk'] = signal_df['initial_risk'].apply(format_rupiah)
-        signal_df['trailing'] = signal_df['trailing'].apply(format_rupiah)
-        signal_df['precision'] = signal_df['precision'].apply(format_percent)
+        if signal_df.empty == False:
+            signal_df.sort_values('total_profit', ascending=False)
+            signal_df['total_profit'] = signal_df['total_profit'].apply(format_rupiah)
+            signal_df['largest_profit'] = signal_df['largest_profit'].apply(format_rupiah)
+            signal_df['largest_loss'] = signal_df['largest_loss'].apply(format_rupiah)
+            signal_df['max_drawdown'] = signal_df['max_drawdown'].apply(format_rupiah)
+            signal_df['entry'] = signal_df['entry'].apply(format_rupiah)
+            signal_df['initial_risk'] = signal_df['initial_risk'].apply(format_rupiah)
+            signal_df['trailing'] = signal_df['trailing'].apply(format_rupiah)
+            signal_df['precision'] = signal_df['precision'].apply(format_percent)
         return stat_df, signal_df
+
+    def multi_stg_backtest(self, stg_list):
+        list_results = []
+        for stg in stg_list:
+            result = {}
+            print(f"Backtesting {stg['stg'].name} with timeline {stg['interval']}...")
+            stat, signal = self.backtest_watchlist(stg['stg'], start_date=stg['start_date'], interval=stg['interval'])
+            result['name'] = stg['stg'].name
+            result['stat'] = stat
+            result['signal'] = signal
+            list_results.append(result)
+        return list_results
     

@@ -1,6 +1,7 @@
 class Strategy():
     def __init__(self, name:str):
         self.name = name
+        self.description = ""
 
     def set_df(self, df):
         self.df = df

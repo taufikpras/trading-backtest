@@ -2,7 +2,12 @@ from app.strategies.strategy import Strategy
 import ta
 
 class Strategy_3ema(Strategy):
-    
+    def __init__(self, name):
+        super().__init__(name)
+        self.description = "entry when ema50 > ema100 \
+            and di >0 \
+            and Close under ema20+atr, \
+            exit when price is below ema20 - atr"
     
     def add_indicator(self):
         self.df['ema20'] = ta.trend.EMAIndicator(self.df['Close'], window=20).ema_indicator()
