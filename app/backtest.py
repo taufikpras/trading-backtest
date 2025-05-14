@@ -99,8 +99,11 @@ class Backtest:
         precision = len(profitable_trades) / number_of_trades if number_of_trades > 0 else 0
         largest_profit = trades_df['profit'].max() if not trades_df.empty else 0
         largest_loss = trades_df['profit'].min() if not trades_df.empty else 0
-        drawdowns = [account_history[i] - max(account_history[:i+1]) for i in range(len(account_history))]
-        max_drawdown = min(drawdowns) if drawdowns else 0
+        # drawdowns = [account_history[i] - max(account_history[:i+1]) for i in range(len(account_history))]
+        # max_drawdown = min(drawdowns) if drawdowns else 0
+        drawdowns = [balance - self.initial_account for balance in account_history]
+        # drawdowns = [drawdown for drawdown in drawdowns if drawdown > 0]
+        max_drawdown = min(drawdowns) if drawdowns else 0 
 
         # Hitung profit per tahun
         balance_series = pd.Series(balance_by_date)

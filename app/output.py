@@ -39,7 +39,7 @@ class PDFReport(FPDF):
     def create_table(self, dataframe, col_widths=None):
         self.set_font(FONT, '', 10)
         if col_widths is None:
-            col_widths = [self.epw / len(dataframe.columns)] * len(dataframe.columns)
+            col_widths = [(self.epw / len(dataframe.columns)) + 2] * len(dataframe.columns)
 
         # Header
         for i, column in enumerate(dataframe.columns):
@@ -194,3 +194,17 @@ def print_table(df:pd.DataFrame):
     for row in values:
         table.add_row(row.values())
     print(table)
+    
+def print_dataframe_to_pdf(df:pd.DataFrame, title="", filename="output.pdf"):
+    pdf = PDFReport(orientation = 'L')
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.chapter_title(title)
+    if not df.empty:
+        # trades_to_display = df[display_cols].copy()
+        # col_widths = [35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+        pdf.create_table(df)
+    else:
+        pdf.chapter_body("No trades available.")
+    pdf.output(f'./data/output/{filename}')
+    print(f"PDF saved to {filename}")
