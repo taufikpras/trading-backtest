@@ -1,5 +1,6 @@
 from app.backtest import Backtest
 from app.strategies.strategy_close_ema import Strategy_Close_Ema
+from app.strategies.strategy_2ema import Strategy_2ema
 from pprint import pprint
 import pandas as pd
 import output
@@ -21,6 +22,12 @@ list_of_stg.append({"stg":ema30, "start_date":"2019-01-01", "interval":"1d"})
 ema50 = Strategy_Close_Ema("EMA50 1d", 50)
 list_of_stg.append({"stg":ema50, "start_date":"2019-01-01", "interval":"1d"})
 
+ema8_50 = Strategy_2ema("EMA8_50 1d", 8, 50)
+list_of_stg.append({"stg":ema8_50, "start_date":"2019-01-01", "interval":"1d"})
+ema20_100 = Strategy_2ema("EMA20_100 1d", 20, 50)
+list_of_stg.append({"stg":ema20_100, "start_date":"2019-01-01", "interval":"1d"})
+ema50_100 = Strategy_2ema("EMA50_100 1d", 50, 100)
+list_of_stg.append({"stg":ema50_100, "start_date":"2019-01-01", "interval":"1d"})
 
 ema8 = Strategy_Close_Ema("EMA8 1wk",8)
 list_of_stg.append({"stg":ema8, "start_date":"2019-01-01", "interval":"1wk"})
@@ -31,6 +38,10 @@ list_of_stg.append({"stg":ema30, "start_date":"2019-01-01", "interval":"1wk"})
 ema50 = Strategy_Close_Ema("EMA50 1wk", 50)
 list_of_stg.append({"stg":ema50, "start_date":"2019-01-01", "interval":"1wk"})
 
+ema8_30 = Strategy_2ema("EMA8_30 1wk", 8, 30)
+list_of_stg.append({"stg":ema8_30, "start_date":"2019-01-01", "interval":"1wk"})
+ema20_50 = Strategy_2ema("EMA20_50 1wk", 20, 50)
+list_of_stg.append({"stg":ema20_50, "start_date":"2019-01-01", "interval":"1wk"})
 
 list_of_result = backtest.multi_stg_backtest(list_of_stg)
 result_accumulation_dict = {}
