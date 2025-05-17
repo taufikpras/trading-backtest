@@ -1,20 +1,20 @@
 from app.strategies.strategy import Strategy
 import ta
 
-class Strategy_Close_Ema(Strategy):
+class Strategy_Ema_High_Low(Strategy):
     def __init__(self, name, ema_length = 8):
         if name is None:
-            name = f"Ema_close {ema_length}"
+            name = f"Ema_High_Low {ema_length}"
         super().__init__(name)
-        self.description = "entry when close > ema \
+        self.description = "entry when close > ema_high \
             and di >0 \
-            and Close under ema+atr, \
             exit when price is below ema - atr"
         self.ema_length = ema_length
     
     def add_indicator(self):
-        self.df['ema_main'] = ta.trend.EMAIndicator(self.df['Close'], window=self.ema_length).ema_indicator()        
-        self.df['upper'] = self.df['ema_main'] + ta.volatility.AverageTrueRange(self.df['High'], self.df['Low'], self.df['Close'], window=14).average_true_range()
+        self.df['ema_main'] = ta.trend.EMAIndicator(self.df['Close'], window=self.ema_length).ema_indicator()
+        self.df['ema_high'] = ta.trend.EMAIndicator(self.df['High'], window=self.ema_length).ema_indicator()
+        self.df['ema_low'] = ta.trend.EMAIndicator(self.df['Low'], window=self.ema_length).ema_indicator()
         self.df['trailing'] = self.df['ema_main'].shift(1) - ta.volatility.AverageTrueRange(self.df['High'], self.df['Low'], self.df['Close'], window=14).average_true_range().shift(1)
         self.df['trailing'] = self.df['trailing'].rolling(window=2).max()
         self.df['di'] = ta.trend.ADXIndicator(self.df['High'], self.df['Low'], self.df['Close'], window=14).adx_pos() -  ta.trend.ADXIndicator(self.df['High'], self.df['Low'], self.df['Close'], window=14).adx_neg()
@@ -22,7 +22,7 @@ class Strategy_Close_Ema(Strategy):
     
     def add_signal(self):
         rule_entry = (
-            (self.df['Close'] < self.df['upper']) &
+            (self.df['Close'] > self.df['ema_high']) &
             (self.df['Close'] > self.df['ema_main']) &
             (self.df['di'] > 0)
         )

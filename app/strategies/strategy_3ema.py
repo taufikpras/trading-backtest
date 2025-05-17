@@ -1,37 +1,29 @@
-from app.strategies.strategy import Strategy
-import ta
+from app.strategies.base_strategy import BaseStrategy
 
-class Strategy_3ema(Strategy):
-    def __init__(self, name):
+class Strategy_3ema(BaseStrategy):
+    def __init__(self, name, ema_short, ema_medium, ema_long):
         super().__init__(name)
-        self.description = "entry when ema50 > ema100 \
-            and di >0 \
-            and Close under ema20+atr, \
-            exit when price is below ema20 - atr"
-    
-    def add_indicator(self):
-        self.df['ema20'] = ta.trend.EMAIndicator(self.df['Close'], window=20).ema_indicator()
-        self.df['ema50'] = ta.trend.EMAIndicator(self.df['Close'], window=50).ema_indicator()
-        self.df['ema100'] = ta.trend.EMAIndicator(self.df['Close'], window=100).ema_indicator()
-        self.df['upper'] = self.df['ema20'] + ta.volatility.AverageTrueRange(self.df['High'], self.df['Low'], self.df['Close'], window=14).average_true_range()
-        self.df['trailing'] = self.df['ema20'].shift(1) - ta.volatility.AverageTrueRange(self.df['High'], self.df['Low'], self.df['Close'], window=14).average_true_range().shift(1)
-        self.df['trailing'] = self.df['trailing'].rolling(window=3).max()
-        self.df['di'] = ta.trend.ADXIndicator(self.df['High'], self.df['Low'], self.df['Close'], window=14).adx_pos() -  ta.trend.ADXIndicator(self.df['High'], self.df['Low'], self.df['Close'], window=14).adx_neg()
-        self.df = self.df.dropna()
-    
-    def add_signal(self):
-        rule_entry = (
-            (self.df['Close'] < self.df['upper']) &
-            (self.df['Close'] > self.df['trailing']) &
-            (self.df['Close'] > self.df['Close'].shift(1)) &
-            (self.df['ema50'] > self.df['ema100']) &
-            (self.df['di'] > 0)
-        )
-        self.df['entry_signal'] = rule_entry.astype(int)
+        self.ema_short = ema_short
+        self.ema_medium = ema_medium
+        self.ema_long = ema_long
 
-        rule_exit = (
-            (self.df['Close'] < self.df['trailing'])
-        )
-        self.df['exit_signal'] = rule_exit.astype(int)
+    def generate_signals(self, data):
+        # Calculate EMAs
+        data[f'ema_{self.ema_short}'] = data['close'].ewm(span=self.ema_short).mean()
+        data[f'ema_{self.ema_medium}'] = data['close'].ewm(span=self.ema_medium).mean()
+        data[f'ema_{self.ema_long}'] = data['close'].ewm(span=self.ema_long).mean()
 
-        self.df['exit_partial'] = 0
+        # Generate buy/sell signals
+        data['signal'] = 0
+        data.loc[
+            (data[f'ema_{self.ema_short}'] > data[f'ema_{self.ema_medium}']) &
+            (data[f'ema_{self.ema_medium}'] > data[f'ema_{self.ema_long}']),
+            'signal'
+        ] = 1  # Buy signal
+        data.loc[
+            (data[f'ema_{self.ema_short}'] < data[f'ema_{self.ema_medium}']) &
+            (data[f'ema_{self.ema_medium}'] < data[f'ema_{self.ema_long}']),
+            'signal'
+        ] = -1  # Sell signal
+
+        return data

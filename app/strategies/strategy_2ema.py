@@ -3,6 +3,8 @@ import ta
 
 class Strategy_2ema(Strategy):
     def __init__(self, name, ema_main = 8, ema_trend = 200):
+        if name is None:
+            name = f"2Ema {ema_main} {ema_trend}"
         super().__init__(name)
         self.description = "entry when  \
             and ema_main > ema_trend \
