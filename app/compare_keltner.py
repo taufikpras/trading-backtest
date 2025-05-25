@@ -9,7 +9,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-backtest = Backtest(40000000,0.01)
+
 
 list_of_stg = []
 
@@ -29,17 +29,18 @@ list_of_stg.append({"stg":Strategy_Keltner("keltner 20 1d", ma=20, atr_multiply=
                     "start_date":"2019-01-01", 
                     "interval":"1d"})
 
-list_of_stg.append({"stg":Strategy_Keltner("keltner 20 1d", ma=20, atr_multiply=1, atr_window=10, lookback=5), 
+list_of_stg.append({"stg":Strategy_Keltner("keltner 100 1d", ma=100, atr_multiply=1, atr_window=10, lookback=5), 
                     "start_date":"2019-01-01", 
                     "interval":"1d"})
 
-list_of_stg.append({"stg":Strategy_Keltner("keltner 50 1d", ma=50, atr_multiply=1, atr_window=10, lookback=5), 
+list_of_stg.append({"stg":Strategy_Keltner("keltner 150 1d", ma=150, atr_multiply=1, atr_window=10, lookback=5), 
                     "start_date":"2019-01-01", 
                     "interval":"1d"})
 list_of_stg.append({"stg":Strategy_Keltner("keltner 200 1d", ma=200, atr_multiply=1, atr_window=10, lookback=5), 
                     "start_date":"2019-01-01", 
                     "interval":"1d"})
 
+backtest = Backtest(40000000,0.005)
 list_of_result = backtest.multi_stg_backtest(list_of_stg)
 result_accumulation_dict = {}
 for result in list_of_result:
